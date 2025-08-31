@@ -15,6 +15,8 @@ import UserDropdown from "./user-dropdown"
 import CarDropdown from "./car-dropdown"
 import { useCreateIncident } from "@/hooks/useQuery"
 import { FileUploadArea } from "./file-upload-area"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const schema = z.object({
     carId: z.coerce.number().min(1, "Car ID is required"),
@@ -41,6 +43,7 @@ export type FormValues = z.infer<typeof schema>
 
 export default function IncidentForm() {
     // const { toast } = useToast()
+    const router = useRouter()
     const [submitting, setSubmitting] = React.useState(false)
     const [images, setImages] = React.useState<File[]>([])
     const [documents, setDocuments] = React.useState<File[]>([])
@@ -112,13 +115,14 @@ export default function IncidentForm() {
 
             await createIncident(fd)
 
-            // toast({ title: "Incident created", description: "Your incident was created successfully." })
+            toast("Incident created")
             form.reset()
             setImages([])
             setDocuments([])
+            router.push("/fleetmanager/incidents")
         } catch (err: any) {
             console.error(err)
-            // toast({ title: "Error", description: err?.message || "Unable to create incident", variant: "destructive" })
+            toast("Unable to create incident")
         } finally {
             setSubmitting(false)
         }

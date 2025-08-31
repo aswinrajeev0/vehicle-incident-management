@@ -20,11 +20,19 @@ export default function IncidentsPage() {
                         Browse and track reported incidents.
                     </p>
                 </div>
-                <Link href="/fleetmanager/incidents/new">
-                    <Button>
-                        + New Incident
-                    </Button>
-                </Link>
+                <div>
+                    <Link href="/fleetmanager/incidents/new">
+                        <Button>
+                            + New Incident
+                        </Button>
+                    </Link>
+                    &nbsp;
+                    <Link href="/fleetmanager/incidents/stats">
+                        <Button variant={"secondary"}>
+                            Stats
+                        </Button>
+                    </Link>
+                </div>
             </header>
 
             {/* Mobile: cards */}

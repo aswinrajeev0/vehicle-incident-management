@@ -14,6 +14,7 @@ import { useParams } from "next/navigation"
 import { Incident } from "@/lib/types/incident"
 import { FormValues } from "@/components/incident-form"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function IncidentEditForm({ onCancel }: { onCancel?: () => void }) {
     const params = useParams()
@@ -77,10 +78,12 @@ export default function IncidentEditForm({ onCancel }: { onCancel?: () => void }
             })
 
             await updateIncident({ id, data: fd })
+            toast("Incident updated")
 
             router.push(`/fleetmanager/incidents/${id}`)
         } catch (err) {
             console.error(err)
+            toast("Something went wrong")
         } finally {
             setSubmitting(false)
         }

@@ -43,7 +43,7 @@ export const fetchIncidentDetail = async (id: string) => {
 };
 
 export const fetchIncidentStats = async () => {
-    return apiClient.get<IncidentStats>('/incidents/stats');
+    return (await apiClient.get('/incidents/stats')).data as IncidentStats;
 };
 
 export const fetchUsers = async () => {
