@@ -3,7 +3,7 @@ import { IUser } from '@/lib/types/user.type';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { FormValues } from './incident-form';
+import { FormValues } from '@/lib/validators/form.validator';
 
 interface UserDropdownProps {
   form: UseFormReturn<FormValues>;

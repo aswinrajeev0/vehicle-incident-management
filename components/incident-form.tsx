@@ -270,7 +270,7 @@ export default function IncidentForm() {
                         onFilesChange={setImages}
                         accept="image/*"
                         label="Upload Images"
-                        icon={<Image className="h-8 w-8 text-muted-foreground" />}
+                        icon={<Image className="h-8 w-8 text-muted-foreground" aria-hidden="true" />}
                         description="Upload incident photos (JPEG, PNG, etc.)"
                     />
                 </div>

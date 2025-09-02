@@ -117,9 +117,9 @@ export function FileUploadArea({ files, onFilesChange, accept, multiple = true, 
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
                                     {file.type.startsWith('image/') ? (
-                                        <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                        <Image className="h-4 w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                                     ) : (
-                                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                        <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                                     )}
                                     <span className="truncate">{file.name}</span>
                                     <span className="text-xs text-muted-foreground flex-shrink-0">

@@ -16,12 +16,6 @@ type StatsResponse = {
     openIncidents: number
 }
 
-const fetcher = async (url: string) => {
-    const r = await fetch(url, { cache: "no-store" })
-    if (!r.ok) throw new Error(`Request failed: ${r.status}`)
-    return r.json()
-}
-
 export default function StatsPage() {
     const {data, isLoading, error} = useIncidentStats()
 

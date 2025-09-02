@@ -9,9 +9,9 @@ export const runtime = 'nodejs';
 
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const id = Number(params.id);
+    const id = Number((await params).id);
     const incident = await prisma.incident.findUnique({
         where: { id },
         include: {
@@ -112,11 +112,11 @@ export async function PUT(
         });
 
         return NextResponse.json(updated);
-    } catch (err: any) {
-        return NextResponse.json(
-            { error: err?.message || 'Failed to update incident' },
-            { status: 400 }
-        );
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: 'Failed to update incident' }, { status: 500 });
     }
 }
 
@@ -159,11 +159,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         });
 
         return NextResponse.json(updatedIncident, { status: 200 });
-    } catch (error: any) {
-        console.error("PATCH /incidents/[id] error:", error);
-        return NextResponse.json(
-            { error: "Failed to update incident", details: error.message },
-            { status: 500 }
-        );
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: "Failed to update incident" }, { status: 500 });
     }
 }

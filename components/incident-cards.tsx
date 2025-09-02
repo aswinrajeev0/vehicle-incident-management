@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Incident } from "@/lib/types/incident"
-import Link from "next/link"
 import { useState } from "react"
 import { useUpdateIncidentStatus } from "@/hooks/useQuery"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"

@@ -25,7 +25,7 @@ export default function IncidentEditForm({ onCancel }: { onCancel?: () => void }
     const router = useRouter();
 
     const { data } = useIncidentDetail(id)
-    const incident = (data || {}) as Incident
+    const incident = React.useMemo(() => (data || {}) as Incident, [data]);
 
     const { mutateAsync: updateIncident, isPending } = useUpdateIncident()
 

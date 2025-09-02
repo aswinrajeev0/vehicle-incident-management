@@ -38,13 +38,11 @@ export async function POST(req: Request) {
     try {
         const contentType = req.headers.get('content-type') || '';
 
-        // Accept both JSON and multipart/form-data
         let data: any;
 
         if (contentType.includes('multipart/form-data')) {
             const form = await req.formData();
 
-            // Parse scalar fields
             const fields: Record<string, any> = {};
             form.forEach((value, key) => {
                 if (typeof value === "string" && key !== "images" && key !== "documents") {
@@ -52,11 +50,9 @@ export async function POST(req: Request) {
                 }
             });
 
-            // Parse provided JSON arrays (optional)
             const imagesFromBody = fields.images ? JSON.parse(fields.images) : [];
             const documentsFromBody = fields.documents ? JSON.parse(fields.documents) : [];
 
-            // Upload files if provided
             const imageFiles = form.getAll('images') as File[];
             const documentFiles = form.getAll('documents') as File[];
 
@@ -75,8 +71,6 @@ export async function POST(req: Request) {
         } else {
             data = await req.json();
         }
-
-        console.log(data)
 
         const parsed = createIncidentSchema.parse(data);
 
@@ -107,7 +101,6 @@ export async function POST(req: Request) {
                 include: commonInclude,
             });
 
-            // Minimal "audit": record creation as a COMMENT
             await tx.incidentUpdate.create({
                 data: {
                     incidentId: incident.id,
@@ -117,7 +110,6 @@ export async function POST(req: Request) {
                 },
             });
 
-            // If assignment present, log it
             if (incident.assignedToId) {
                 await tx.incidentUpdate.create({
                     data: {
@@ -133,11 +125,10 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(created, { status: 201 });
-    } catch (err: any) {
-        console.error(err)
-        return NextResponse.json(
-            { error: err?.message || 'Failed to create incident' },
-            { status: 400 }
-        );
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: 'Failed to create incident' }, { status: 500 });
     }
 }

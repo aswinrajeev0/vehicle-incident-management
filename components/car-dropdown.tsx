@@ -2,7 +2,7 @@ import { useFetchCars } from '@/hooks/useQuery';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { FormValues } from './incident-form';
+import { FormValues } from '@/lib/validators/form.validator';
 import { ICar } from '@/lib/types/car.type';
 
 interface CarDropdownProps {

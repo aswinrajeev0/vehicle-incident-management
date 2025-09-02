@@ -9,7 +9,10 @@ export async function GET() {
             select: { id: true, make: true },
         });
         return NextResponse.json(cars);
-    } catch (err: any) {
-        return NextResponse.json({ error: err.message || "Failed to fetch cars" }, { status: 500 });
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            return NextResponse.json({ error: err.message }, { status: 500 });
+        }
+        return NextResponse.json({ error: "Failed to fetch cars" }, { status: 500 });
     }
 }
