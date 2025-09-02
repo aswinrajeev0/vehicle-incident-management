@@ -119,3 +119,51 @@ export async function PUT(
         );
     }
 }
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const id = Number((await params).id);
+        const body = await req.json();
+
+        const {
+            title,
+            description,
+            status,
+            severity,
+            type,
+            location,
+            latitude,
+            longitude,
+            resolutionNotes,
+            estimatedCost,
+            actualCost,
+            resolvedAt,
+        } = body;
+
+        const updatedIncident = await prisma.incident.update({
+            where: { id: Number(id) },
+            data: {
+                ...(title && { title }),
+                ...(description && { description }),
+                ...(status && { status }),
+                ...(severity && { severity }),
+                ...(type && { type }),
+                ...(location && { location }),
+                ...(latitude !== undefined && { latitude }),
+                ...(longitude !== undefined && { longitude }),
+                ...(resolutionNotes && { resolutionNotes }),
+                ...(estimatedCost !== undefined && { estimatedCost }),
+                ...(actualCost !== undefined && { actualCost }),
+                ...(resolvedAt && { resolvedAt }),
+            },
+        });
+
+        return NextResponse.json(updatedIncident, { status: 200 });
+    } catch (error: any) {
+        console.error("PATCH /incidents/[id] error:", error);
+        return NextResponse.json(
+            { error: "Failed to update incident", details: error.message },
+            { status: 500 }
+        );
+    }
+}

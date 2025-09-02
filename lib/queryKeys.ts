@@ -1,4 +1,4 @@
-export const queryKeys = {
+const queryKeys = {
     incidents: {
         list: (filters?: Record<string, any>) => ['incidents', filters] as const,
         detail: (id: string) => ['incidents', 'detail', id] as const,
@@ -14,3 +14,5 @@ export const queryKeys = {
         list: () => ['carReadings'] as const,
     },
 };
+
+export default queryKeys

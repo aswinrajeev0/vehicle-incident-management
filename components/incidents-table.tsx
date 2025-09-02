@@ -1,7 +1,12 @@
+"use client"
+
 import type { Incident } from "@/lib/types/incident"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
+import { useUpdateIncidentStatus } from "@/hooks/useQuery"
 
 function formatDate(d: string) {
     try {
@@ -33,6 +38,20 @@ function statusClasses(status: Incident["status"]) {
 
 export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
     const router = useRouter()
+    const {mutateAsync: updateIncidentStatus} = useUpdateIncidentStatus()
+
+    const [editingId, setEditingId] = useState<number | null>(null)
+
+    const updateStatus = async (id: number, newStatus: Incident["status"]) => {
+        try {
+            await updateIncidentStatus({id: id.toString(), status: newStatus})
+
+            setEditingId(null)
+        } catch (err) {
+            console.error("Failed to update status:", err)
+        }
+    }
+
     if (!incidents?.length) {
         return <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">No incidents found.</div>
     }
@@ -52,31 +71,57 @@ export function IncidentsTable({ incidents }: { incidents: Incident[] }) {
             </TableHeader>
             <TableBody>
                 {incidents.map((inc) => (
-                        <TableRow
-                            key={inc.id} 
-                            className="align-top"
-                            onClick={() => router.push(`/fleetmanager/incidents/${inc.id}`)}
+                    <TableRow
+                        key={inc.id}
+                        className="align-top"
+                        onClick={() => router.push(`/fleetmanager/incidents/${inc.id}`)}
+                    >
+                        <TableCell className="font-medium">
+                            <div className="max-w-md">
+                                <div className="truncate">{inc.title}</div>
+                                <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{inc.description}</div>
+                            </div>
+                        </TableCell>
+                        <TableCell>
+                            <span className="rounded bg-muted px-2 py-0.5 text-xs">{inc.severity}</span>
+                        </TableCell>
+                        <TableCell
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                setEditingId(inc.id)
+                            }}
                         >
-                            <TableCell className="font-medium">
-                                <div className="max-w-md">
-                                    <div className="truncate">{inc.title}</div>
-                                    <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{inc.description}</div>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <span className="rounded bg-muted px-2 py-0.5 text-xs">{inc.severity}</span>
-                            </TableCell>
-                            <TableCell>
-                                <Badge className={statusClasses(inc.status)} aria-label={`Status: ${inc.status}`}>
+                            {editingId === inc.id ? (
+                                <Select
+                                    defaultValue={inc.status}
+                                    onValueChange={(val) => updateStatus(inc.id, val as Incident["status"])}
+                                >
+                                    <SelectTrigger className="w-[140px]">
+                                        <SelectValue placeholder="Change status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                        <SelectItem value="RESOLVED">Resolved</SelectItem>
+                                        <SelectItem value="CLOSED">Closed</SelectItem>
+                                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Badge
+                                    className={statusClasses(inc.status)}
+                                    aria-label={`Status: ${inc.status}`}
+                                >
                                     {inc.status.replace("_", " ")}
                                 </Badge>
-                            </TableCell>
-                            <TableCell className="text-xs">{inc.type}</TableCell>
-                            <TableCell className="text-xs">
-                                <span className="block max-w-[16rem] truncate">{inc.location ?? "—"}</span>
-                            </TableCell>
-                            <TableCell className="text-right text-xs">{formatDate(inc.occurredAt)}</TableCell>
-                        </TableRow>
+                            )}
+                        </TableCell>
+                        <TableCell className="text-xs">{inc.type}</TableCell>
+                        <TableCell className="text-xs">
+                            <span className="block max-w-[16rem] truncate">{inc.location ?? "—"}</span>
+                        </TableCell>
+                        <TableCell className="text-right text-xs">{formatDate(inc.occurredAt)}</TableCell>
+                    </TableRow>
                 ))}
             </TableBody>
         </Table>

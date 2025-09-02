@@ -12,9 +12,11 @@ import CarDropdown from "@/components/car-dropdown"
 import { useIncidentDetail, useUpdateIncident } from "@/hooks/useQuery"
 import { useParams } from "next/navigation"
 import { Incident } from "@/lib/types/incident"
-import { FormValues } from "@/components/incident-form"
+import { FormValues } from "@/lib/validators/form.validator"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { schema } from "@/lib/validators/form.validator"
 
 export default function IncidentEditForm({ onCancel }: { onCancel?: () => void }) {
     const params = useParams()
@@ -34,6 +36,7 @@ export default function IncidentEditForm({ onCancel }: { onCancel?: () => void }
     }
 
     const form = useForm<FormValues>({
+        resolver: zodResolver(schema) as any,
         defaultValues: {
             carId: incident.carId || 0,
             reportedById: incident.reportedById || 0,

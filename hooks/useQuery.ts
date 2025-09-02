@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/queryKeys';
+import queryKeys from '@/lib/queryKeys';
 import { apiClient } from '@/lib/api/api-client';
 import { IUser } from '@/lib/types/user.type';
 import { ICar } from '@/lib/types/car.type';
-import { Incident } from '@/lib/types/incident';
+import { Incident, IncidentStatus } from '@/lib/types/incident';
 
 export interface IncidentFilters {
     status?: string;
@@ -115,7 +115,6 @@ export const useCreateIncident = () => {
 
     return useMutation({
         mutationFn: (data: FormData) => {
-            console.log("is FormData:", data instanceof FormData);
             return apiClient.post('/incidents', data)
         },
         onSuccess: () => {
@@ -147,6 +146,95 @@ export const useAddIncidentComment = () => {
             apiClient.post(`/incidents/${id}/updates`, { message: comment, updateType: 'COMMENT' }),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.incidents.detail(variables.id) });
+        },
+    });
+};
+
+export const useUpdateIncidentStatus = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, status }: { id: string; status: IncidentStatus }) => {
+            const { data } = await apiClient.patch<Incident>(`/incidents/${id}`, { status });
+            return data;
+        },
+
+        onMutate: async ({ id, status }) => {
+            await queryClient.cancelQueries({ queryKey: ["incidents"] });
+
+            const previousIncidents = queryClient.getQueriesData<Incident[] | { data: Incident[] }>({
+                queryKey: ["incidents"],
+            });
+
+            previousIncidents.forEach(([key, incidents]) => {
+                if (!incidents) return;
+
+                queryClient.setQueryData<Incident[] | { data: Incident[] }>(key, (old) => {
+                    if (!old) return old;
+
+                    if (Array.isArray(old)) {
+                        return old.map((incident) =>
+                            incident.id === Number(id) ? { ...incident, status } : incident
+                        );
+                    }
+
+                    if ("data" in old) {
+                        return {
+                            ...old,
+                            data: old.data.map((incident) =>
+                                incident.id === Number(id) ? { ...incident, status } : incident
+                            ),
+                        };
+                    }
+
+                    return old;
+                });
+            });
+
+            return { previousIncidents };
+        },
+
+        onSuccess: (updatedIncident) => {
+            queryClient.setQueryData(
+                queryKeys.incidents.detail(String(updatedIncident.id)),
+                updatedIncident
+            );
+
+            queryClient.setQueryData<Incident[] | { data: Incident[] }>(["incidents"], (old) => {
+                if (!old) return old;
+
+                if (Array.isArray(old)) {
+                    return old.map((incident) =>
+                        incident.id === updatedIncident.id ? updatedIncident : incident
+                    );
+                }
+
+                if ("data" in old) {
+                    return {
+                        ...old,
+                        data: old.data.map((incident) =>
+                            incident.id === updatedIncident.id ? updatedIncident : incident
+                        ),
+                    };
+                }
+
+                return old;
+            });
+        },
+
+        onError: (_err, _variables, context) => {
+            if (context?.previousIncidents) {
+                context.previousIncidents.forEach(([key, data]) => {
+                    queryClient.setQueryData(key, data);
+                });
+            }
+        },
+
+        onSettled: (_data, _error, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: queryKeys.incidents.detail(String(variables.id)),
+            });
+            queryClient.invalidateQueries({ queryKey: ["incidents"], exact: false });
         },
     });
 };
